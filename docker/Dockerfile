@@ -21,8 +21,30 @@ RUN yum -y install http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-g
 # clone and build xgboost
 WORKDIR /home
 RUN git clone --recursive https://github.com/dmlc/xgboost && \
-    cd xgboost && \
-    make -j4 && \
+	cd xgboost && \
+	make -j4 && \
 	cd jvm-packages; mvn package
 
-CMD ["/bin/bash"]
+# clone this project, cp jar files
+WORKDIR /home
+RUN git clone https://github.com/ShandiLin/xgb_demo.git
+RUN mkdir /home/xgb_demo/pyspark_xgb/jars
+WORKDIR /home/xgb_demo/pyspark_xgb/jars
+RUN cp /home/xgboost/jvm-packages/xgboost4j/target/xgboost4j-0.81-SNAPSHOT.jar ./xgboost4j-0.81.jar
+RUN cp /home/xgboost/jvm-packages/xgboost4j-spark/target/xgboost4j-spark-0.81-SNAPSHOT.jar ./xgboost4j-spark-0.81.jar
+
+# spark
+WORKDIR /home
+RUN curl -O https://archive.apache.org/dist/spark/spark-2.3.1/spark-2.3.1-bin-hadoop2.6.tgz
+RUN tar zxvf spark-2.3.1-bin-hadoop2.6.tgz
+RUN mv spark-2.3.1-bin-hadoop2.6 /usr/local/
+
+ENV SPARK_HOME /usr/local/spark-2.3.1-bin-hadoop2.6
+ENV JAVA_HOME /usr/lib/jvm/java
+
+# install pip & python packages
+RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+RUN python get-pip.py
+RUN pip install pandas===0.23.4 xgboost===0.80 sklearn===0.0
+
+CMD cd /home/xgb_demo

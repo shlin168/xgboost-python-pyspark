@@ -2,7 +2,7 @@
 export SERVICE_HOME="$(cd "`dirname "$0"`"/..; pwd)"
 
 # define your environment variable
-export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home"
+export JAVA_HOME="/usr/lib/jvm/java"
 export SPARK_HOME='/usr/local/spark-2.3.0-bin-hadoop2.6'
 
 EXEC_PY=$1
