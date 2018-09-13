@@ -40,9 +40,11 @@ RUN tar zxvf spark-2.3.1-bin-hadoop2.6.tgz
 RUN mv spark-2.3.1-bin-hadoop2.6 /usr/local/
 
 ENV SPARK_HOME /usr/local/spark-2.3.1-bin-hadoop2.6
+ENV PATH "$PATH:$SPARK_HOME/bin"
 ENV JAVA_HOME /usr/lib/jvm/java
 
 # install pip & python packages
+WORKDIR /home
 RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
 RUN python get-pip.py
 RUN pip install pandas===0.23.4 xgboost===0.80 sklearn===0.0

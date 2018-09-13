@@ -3,7 +3,7 @@ export SERVICE_HOME="$(cd "`dirname "$0"`"/..; pwd)"
 
 # define your environment variable
 export JAVA_HOME="/usr/lib/jvm/java"
-export SPARK_HOME='/usr/local/spark-2.3.0-bin-hadoop2.6'
+export SPARK_HOME='/usr/local/spark-2.3.1-bin-hadoop2.6'
 
 EXEC_PY=$1
 JARS_PATH=${SERVICE_HOME}/pyspark_xgb/jars/
