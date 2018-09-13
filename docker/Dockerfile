@@ -1,7 +1,7 @@
 FROM centos:7
 
 # Install gcc 4.8
-RUN yum -y install libmpc-devel mpfr-devel gmp-devel zlib-devel bzip2
+RUN yum -y install libmpc-devel mpfr-devel gmp-devel zlib-devel bzip2 curl
 RUN yum -y groupinstall "Development Tools"
 
 # Install cmake 3.8
@@ -13,8 +13,8 @@ RUN tar zxvf cmake-3.8.0.tar.gz \
 	&& make -j4 \
 	&& make install
 
-# Install maven, curl and git
-RUN yum -y install maven curl
+# Install maven and git
+RUN yum -y install maven
 RUN yum -y install http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-git-release-7-2.noarch.rpm && \
 	yum -y install git
 
@@ -45,7 +45,7 @@ ENV JAVA_HOME /usr/lib/jvm/java
 
 # install pip & python packages
 WORKDIR /home
-RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 RUN python get-pip.py
 RUN pip install pandas===0.23.4 xgboost===0.80 sklearn===0.0
 
