@@ -68,6 +68,7 @@ def main():
         xgb_params = {
             "eta": 0.1, "gamma": 0, "max_depth": 4,
             "num_round": 100, "num_early_stopping_rounds": 10,
+            "maximize_evaluation_metrics": True,
             "num_workers": 1, "use_external_memory": False, "missing": np.nan,
             "num_class": 3, "eval_metric": "mlogloss",
             "min_child_weight": 1, "train_test_ratio": 0.8,
