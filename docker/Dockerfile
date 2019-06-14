@@ -22,6 +22,7 @@ RUN yum -y install http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-g
 WORKDIR /home
 RUN git clone --recursive https://github.com/dmlc/xgboost && \
 	cd xgboost && \
+	git checkout v0.81 && \
 	make -j4 && \
 	cd jvm-packages; mvn package
 
@@ -30,8 +31,8 @@ WORKDIR /home
 RUN git clone https://github.com/ShandiLin/xgb_demo.git
 RUN mkdir /home/xgb_demo/pyspark_xgb/jars
 WORKDIR /home/xgb_demo/pyspark_xgb/jars
-RUN cp /home/xgboost/jvm-packages/xgboost4j/target/xgboost4j-0.81-SNAPSHOT.jar ./xgboost4j-0.81.jar
-RUN cp /home/xgboost/jvm-packages/xgboost4j-spark/target/xgboost4j-spark-0.81-SNAPSHOT.jar ./xgboost4j-spark-0.81.jar
+RUN cp /home/xgboost/jvm-packages/xgboost4j/target/xgboost4j-0.81*.jar ./xgboost4j-0.81.jar
+RUN cp /home/xgboost/jvm-packages/xgboost4j-spark/target/xgboost4j-spark-0.81*.jar ./xgboost4j-spark-0.81.jar
 
 # spark
 WORKDIR /home
