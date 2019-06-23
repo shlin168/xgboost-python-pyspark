@@ -6,12 +6,13 @@ import numpy as np
 import pyspark.sql.functions as F
 from pyspark.sql.types import FloatType
 from pyspark.sql import DataFrame
-from pyspark.ml.feature import VectorAssembler, StringIndexer
+from pyspark.ml.feature import VectorAssembler
 from pyspark.ml import Pipeline
 from pyspark.ml.wrapper import JavaWrapper
 
 from spark import get_spark, get_logger
 from schema import get_mtrain_schema
+
 
 # assert len(os.environ.get('JAVA_HOME')) != 0, 'JAVA_HOME not set'
 assert len(os.environ.get('SPARK_HOME')) != 0, 'SPARK_HOME not set'
@@ -27,14 +28,14 @@ LOCAL_MODEL_PATH = PARENT_PROJ_PATH + '/python_xgb/multi_model'
 
 
 def udf_logloss(truth, pred, n_class, eps=1e-15):
+    # have been validated using logloss in sklearn metric
     import math
 
     def logloss_(truth, pred):
         truth_array = [0] * n_class
         truth_array[int(truth)] = 1
         pred = [eps if p < eps else float(p) for p in pred]
-        logloss = sum([t * math.log(p) if t == 1 else (1 - t) *
-                       math.log(1 - p) for t, p in zip(truth_array, pred)])
+        logloss = sum([t * math.log(p) for t, p in zip(truth_array, pred)])
         return -logloss
     return F.udf(logloss_, FloatType())(truth, pred)
 
@@ -50,18 +51,25 @@ def main():
         logger = get_logger(spark, "app")
 
         # load data
-        df = spark.read.csv(DATASET_PATH + "/iris.data", get_mtrain_schema())
+        train = spark.read.csv(DATASET_PATH + "/iris_train.csv",
+                    get_mtrain_schema(),
+                    header=True)
+        test = spark.read.csv(DATASET_PATH + "/iris_test.csv",
+                    get_mtrain_schema(),
+                    header=True)
 
         # preprocess
+        # get label encode result from csv, since StringIndexer will get different result
+        STR_LABEL = 'class'
         LABEL = 'label'
         FEATURES = 'features'
         N_CLASS = 3
-        features = [c for c in df.columns if c != "class"]
-        assembler = VectorAssembler(inputCols=features, outputCol='features')
-        strIdxer = StringIndexer(inputCol="class", outputCol=LABEL)
-        pipeline = Pipeline(stages=[assembler, strIdxer])
-        df = pipeline.fit(df).transform(df).select(FEATURES, LABEL)
-        train, test = df.randomSplit([0.8, 0.2])
+        features = [c for c in train.columns if c not in [STR_LABEL, LABEL]]
+        assembler = VectorAssembler(inputCols=features, outputCol=FEATURES)
+        pipeline = Pipeline(stages=[assembler])
+        preprocess = pipeline.fit(train)
+        train = preprocess.transform(train).select(FEATURES, LABEL)
+        test = preprocess.transform(test).select(FEATURES, LABEL)
 
         # training
         logger.info('training')

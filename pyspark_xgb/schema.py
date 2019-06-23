@@ -76,7 +76,8 @@ def get_mtrain_schema():
         StructField('sepal_width', FloatType(), True),
         StructField('petal_length', FloatType(), False),
         StructField('petal_width', FloatType(), False),
-        StructField('class', StringType(), False)])
+        StructField('class', StringType(), False),
+        StructField('label', DoubleType(), False)])
 
 
 def get_mtest_schema():

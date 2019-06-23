@@ -14,21 +14,35 @@ DATASET_PATH = PARENT_PROJ_PATH + '/dataset'
 MODEL_PATH = LOCAL_PROJ_PATH + '/multi_model'
 
 
-def main():
+def generate_train_test_data():
     df = pd.read_csv(DATASET_PATH + '/iris.data', header=None)
-    df.columns = ["sepal_length", "sepal_width",
-                  "petal_length", "petal_width", "class"]
+    features = ["sepal_length", "sepal_width", "petal_length", "petal_width"]
+    str_label = 'class'
+    df.columns = features + [str_label]
+    train, test, y_train, y_test = train_test_split(
+        df[features], df[str_label], test_size=0.1, random_state=0)
+    train[str_label] = y_train
+    test[str_label] = y_test
+    train.to_csv(DATASET_PATH + '/iris_train.csv', index=0)
+    test.to_csv(DATASET_PATH + '/iris_test.csv', index=0)
 
-    le = preprocessing.LabelEncoder()
-    df['label'] = le.fit_transform(df['class'])
+
+def main():
+    # generate_train_test_data()
+
+    train = pd.read_csv(DATASET_PATH + '/iris_train.csv')
+    test = pd.read_csv(DATASET_PATH + '/iris_test.csv')
 
     features = ["sepal_length", "sepal_width", "petal_length", "petal_width"]
+    str_label = 'class'
     label = 'label'
 
-    train, test, y_train, y_test = train_test_split(
-        df[features], df[label], test_size=0.1, random_state=0)
-    train[label] = y_train
-    test[label] = y_test
+    le = preprocessing.LabelEncoder().fit(train[str_label])
+    train[label] = le.transform(train[str_label])
+    test[label] = le.transform(test[str_label])
+
+    train.to_csv(DATASET_PATH + '/iris_train.csv', index=0)
+    test.to_csv(DATASET_PATH + '/iris_test.csv', index=0)
 
     d_train = xgb.DMatrix(train[features], train[label], missing=np.nan)
     d_test = xgb.DMatrix(test[features], test[label], missing=np.nan)
