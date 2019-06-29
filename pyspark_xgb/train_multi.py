@@ -76,7 +76,7 @@ def main():
             "eta": 0.1, "eval_metric": "mlogloss",
             "gamma": 0, "max_depth": 5, "min_child_weight": 1.0,
             "objective": "multi:softprob", "seed": 0,
-            "num_class": 3,
+            "num_class": N_CLASS,
             # xgboost4j only
             "num_round": 100, "num_early_stopping_rounds": 10,
             "maximize_evaluation_metrics": False,

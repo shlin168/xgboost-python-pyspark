@@ -47,11 +47,12 @@ def main():
     d_train = xgb.DMatrix(train[features], train[label], missing=np.nan)
     d_test = xgb.DMatrix(test[features], test[label], missing=np.nan)
 
+    N_CLASS = 3
     params = {
         "eta": 0.1, "eval_metric": "mlogloss",
         "gamma": 0, "max_depth": 5, "min_child_weight": 1.0,
         "objective": "multi:softprob", "seed": 0,
-        "num_class": 3
+        "num_class": N_CLASS
     }
 
     plst = params.items()  # turn to tuple
