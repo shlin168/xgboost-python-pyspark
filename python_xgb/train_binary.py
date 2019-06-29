@@ -25,8 +25,10 @@ def main():
     d_train = xgb.DMatrix(train[features], train[target], missing=np.nan)
     d_test = xgb.DMatrix(test[features], test[target], missing=np.nan)
 
-    params = {'max_depth': 10, 'min_child_weight': 3.0, 'eval_metric': 'auc',
-              'seed': 0, 'objective': 'binary:logistic', 'eta': 0.1}
+    params = {
+        'eta': 0.1, 'eval_metric': 'logloss',
+        'gamma': 0, 'max_depth': 5, 'min_child_weight': 1.0,
+        'objective': 'binary:logistic', 'seed': 0}
     plst = params.items()  # turn to tuple
 
     evallist = [(d_train, 'train'), (d_test, 'test')]

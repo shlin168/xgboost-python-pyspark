@@ -58,20 +58,28 @@ def main():
         train = assembler.transform(train).select(FEATURES, LABEL)
         test = assembler.transform(test).select(FEATURES, LABEL)
 
-        # training
-        logger.info('training')
+        # set param map
         xgb_params = {
-            "eta": 0.1, "gamma": 0, "max_depth": 4,
+            "eta": 0.1, "eval_metric": "logloss",
+            "gamma": 0, "max_depth": 5, "min_child_weight": 1.0,
+            "objective": "binary:logistic", "seed": 0,
+            # xgboost4j only
             "num_round": 100, "num_early_stopping_rounds": 10,
-            "maximize_evaluation_metrics": True,
-            "num_workers": 1, "use_external_memory": False, "missing": np.nan,
-            "eval_metric": "logloss", "min_child_weight": 1, "train_test_ratio": 0.8,
-            "objective": "binary:logistic"
+            "maximize_evaluation_metrics": False,   # minimize logloss
+            "num_workers": 1, "use_external_memory": False,
+            "missing": np.nan,
         }
         scala_map = spark._jvm.PythonUtils.toScalaMap(xgb_params)
+
+        # set evaluation set
+        eval_set = {'eval': test._jdf}
+        scala_eval_set = spark._jvm.PythonUtils.toScalaMap(eval_set)
+
+        logger.info('training')
         j = JavaWrapper._new_java_obj(
             "ml.dmlc.xgboost4j.scala.spark.XGBoostClassifier", scala_map) \
-            .setFeaturesCol(FEATURES).setLabelCol(LABEL)
+            .setFeaturesCol(FEATURES).setLabelCol(LABEL) \
+            .setEvalSets(scala_eval_set)
         jmodel = j.train(train._jdf)
         logger.info(jmodel.summary().toString())
 
