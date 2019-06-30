@@ -30,7 +30,9 @@ def main():
     params = {
         'eta': 0.1, 'eval_metric': 'logloss',
         'gamma': 0, 'max_depth': 5, 'min_child_weight': 1.0,
-        'objective': 'binary:logistic', 'seed': 0}
+        'objective': 'binary:logistic', 'seed': 0,
+        'verbosity': 0
+    }
     plst = params.items()  # turn to tuple
 
     evallist = [(d_train, 'train'), (d_test, 'test')]
