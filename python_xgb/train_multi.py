@@ -7,6 +7,9 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import log_loss
 
+from utils import create_feature_map, create_feature_imp
+
+
 abspath = os.path.abspath(__file__)
 PARENT_PROJ_PATH = '/'.join(abspath.split(os.sep)[:-2])
 LOCAL_PROJ_PATH = '/'.join(abspath.split(os.sep)[:-1])
@@ -62,12 +65,22 @@ def main():
     bst = xgb.train(plst, d_train, num_rounds,
                     evallist, early_stopping_rounds=10)
 
+    # write feature map and feature importance file
+    imp_type = 'gain'
+    feature_map_path = MODEL_PATH + '/feature.map'
+    create_feature_map(feature_map_path, features)
+    feature_imp_path = MODEL_PATH + '/feature.imp'
+    create_feature_imp(feature_imp_path, bst.get_score(feature_map_path, imp_type))
+
     if not os.path.isdir(MODEL_PATH):
         os.mkdir(MODEL_PATH)
 
     print 'save model to {}'.format(MODEL_PATH + '/model.bin')
     bst.save_model(MODEL_PATH + '/model.bin')
 
+    # load model and predict
+    bst = xgb.Booster({'nthread': 4})
+    bst.load_model(MODEL_PATH + '/model.bin')
     pred = bst.predict(d_test)
     truth = test[label].values
 

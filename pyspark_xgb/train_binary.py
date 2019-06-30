@@ -11,6 +11,8 @@ from pyspark.ml.wrapper import JavaWrapper
 
 from spark import get_spark, get_logger
 from schema import get_btrain_schema
+from utils import create_feature_map, create_feature_imp, print_summary
+
 
 # assert len(os.environ.get('JAVA_HOME')) != 0, 'JAVA_HOME not set'
 assert len(os.environ.get('SPARK_HOME')) != 0, 'SPARK_HOME not set'
@@ -80,8 +82,8 @@ def main():
             "ml.dmlc.xgboost4j.scala.spark.XGBoostClassifier", scala_map) \
             .setFeaturesCol(FEATURES).setLabelCol(LABEL) \
             .setEvalSets(scala_eval_set)
-        jmodel = j.train(train._jdf)
-        logger.info(jmodel.summary().toString())
+        jmodel = j.fit(train._jdf)
+        print_summary(jmodel)
 
         # get validation metric
         preds = jmodel.transform(test._jdf)
@@ -90,16 +92,23 @@ def main():
             .agg({"log_loss": "mean"}).collect()[0]['avg(log_loss)']
         logger.info('[xgboost4j] valid logloss: {}'.format(slogloss))
 
-        # save or update model
+        # save model - using native booster for single node library to read
         model_path = MODEL_PATH + '/model.bin'
-        if os.path.exists(model_path):
-            shutil.rmtree(model_path)
-            logger.info('model exist, rm old model')
-        jw = JavaWrapper._new_java_obj(
-            "ml.dmlc.xgboost4j.scala.spark.XGBoostClassificationModel.XGBoostClassificationModelWriter",
-            jmodel)
-        jw.saveImpl(model_path)
         logger.info('save model to {}'.format(model_path))
+        jbooster = jmodel.nativeBooster()
+        jbooster.saveModel(model_path)
+
+        # get feature score
+        imp_type = "gain"
+        feature_map_path = MODEL_PATH + '/feature.map'
+        create_feature_map(feature_map_path, features)
+        jfeatureMap = jbooster.getScore(feature_map_path, imp_type)
+        f_imp = dict()
+        for feature in features:
+            if not jfeatureMap.get(feature).isEmpty():
+                f_imp[feature] = jfeatureMap.get(feature).get()
+        feature_imp_path = MODEL_PATH + '/feature.imp'
+        create_feature_imp(feature_imp_path, f_imp)
 
         # [Optional] load model training by xgboost, predict and get validation metric
         local_model_path = LOCAL_MODEL_PATH + '/model.bin'
