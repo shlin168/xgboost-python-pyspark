@@ -46,5 +46,5 @@ docker build -t xgb:latest . --no-cache
 ### start docker container using images, go to project directory
 ```
 docker run -i -t xgb:latest /bin/bash
-cd xgb_demo
+cd xgboost-python-pyspark
 ```
