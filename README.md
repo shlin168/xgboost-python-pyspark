@@ -1,4 +1,4 @@
-# xgb_demo
+# xgboost in python and pyspark
 xgboost in python and pyspark (using py4j to call jvm-packages)<br/>
 xgboost4j version: `0.82`
 > TODO: xgboost4j is not the latest version since 0.90 only supports `python3` and `spark 2.4`
